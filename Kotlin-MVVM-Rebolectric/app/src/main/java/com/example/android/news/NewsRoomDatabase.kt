@@ -71,7 +71,6 @@ abstract class NewsRoomDatabase : RoomDatabase() {
          */
         fun populateDatabase(wordDao: NewsDao) {
             // Start the app with a clean database every time.
-
             wordDao.deleteAll()
         }
     }
