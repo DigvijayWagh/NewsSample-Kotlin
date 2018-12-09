@@ -69,9 +69,9 @@ abstract class NewsRoomDatabase : RoomDatabase() {
          * Populate the database in a new coroutine.
          * If you want to start with more words, just add them.
          */
-        fun populateDatabase(wordDao: NewsDao) {
+        fun populateDatabase(newsDao: NewsDao) {
             // Start the app with a clean database every time.
-            wordDao.deleteAll()
+            newsDao.deleteAll()
         }
     }
 

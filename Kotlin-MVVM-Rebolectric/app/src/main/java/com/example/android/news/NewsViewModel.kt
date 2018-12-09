@@ -24,8 +24,8 @@ class NewsViewModel(application: Application) : AndroidViewModel(application) {
     val allNews: LiveData<List<News>>
 
     init {
-        val wordsDao = NewsRoomDatabase.getDatabase(application, scope).newsDao()
-        repository = NewsRepository(wordsDao)
+        val newsDao = NewsRoomDatabase.getDatabase(application, scope).newsDao()
+        repository = NewsRepository(newsDao)
         allNews = repository.allNews
     }
 

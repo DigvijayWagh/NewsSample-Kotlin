@@ -2,11 +2,13 @@ package com.example.android.news
 
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
+import android.content.Intent
 import android.os.Bundle
+import android.support.design.widget.FloatingActionButton
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
-import android.util.Log
+import android.widget.Toast
 import com.android.volley.*
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
@@ -67,7 +69,8 @@ class MainActivity : AppCompatActivity() {
 
                     fun onErrorResponse(error: VolleyError) {
 
-                        Log.d("data_error", "Error: " + error.message)
+                        Toast.makeText(this,"Error: " + error.message,Toast.LENGTH_LONG).show()
+
                         if (error is NetworkError)
                         {}
                         else if (error is ServerError)
