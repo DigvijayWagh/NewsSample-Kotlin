@@ -1,0 +1,7 @@
+
+<resources>
+    <string name="app_name">NEWS</string>
+    <string name="action_settings">Settings</string>
+    <string name="hint_word">Word…</string>
+    <string name="button_save">Save</string>
+</resources>
