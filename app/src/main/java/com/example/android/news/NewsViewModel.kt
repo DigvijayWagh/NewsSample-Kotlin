@@ -37,6 +37,10 @@ class NewsViewModel(application: Application) : AndroidViewModel(application) {
         repository.insert(news)
     }
 
+    fun clearData(){
+        repository.deleteAll()
+    }
+
     override fun onCleared() {
         super.onCleared()
         parentJob.cancel()

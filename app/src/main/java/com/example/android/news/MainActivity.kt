@@ -2,13 +2,11 @@ package com.example.android.news
 
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
-import android.content.Intent
 import android.os.Bundle
-import android.support.design.widget.FloatingActionButton
+import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
-import android.util.Log
 import android.widget.Toast
 import com.android.volley.*
 import com.android.volley.toolbox.StringRequest
@@ -16,9 +14,10 @@ import com.android.volley.toolbox.Volley
 import org.json.JSONArray
 import org.json.JSONObject
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(),SwipeRefreshLayout.OnRefreshListener {
 
     private lateinit var newsViewModel: NewsViewModel
+    lateinit var mSwipeRefreshLayout:SwipeRefreshLayout
     val url: String = "https://dl.dropboxusercontent.com/s/2iodh4vg0eortkl/facts.json"
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,6 +30,14 @@ class MainActivity : AppCompatActivity() {
         recyclerView.adapter = adapter
         recyclerView.layoutManager = LinearLayoutManager(this)
 
+        // SwipeRefreshLayout
+        mSwipeRefreshLayout = findViewById<SwipeRefreshLayout>(R.id.swipe_container)
+        mSwipeRefreshLayout.setOnRefreshListener(this)
+        mSwipeRefreshLayout.setColorSchemeResources(R.color.colorPrimary,
+                android.R.color.holo_green_dark,
+                android.R.color.holo_orange_dark,
+                android.R.color.holo_blue_dark)
+
         // Get a new or existing ViewModel from the ViewModelProvider.
         newsViewModel = ViewModelProviders.of(this).get(NewsViewModel::class.java)
 
@@ -39,7 +46,16 @@ class MainActivity : AppCompatActivity() {
             news?.let { adapter.setNews(it) }
         })
 
-        receiveDataFromServer()
+        /**
+         * Showing Swipe Refresh animation on activity create
+         */
+        mSwipeRefreshLayout.post {
+            mSwipeRefreshLayout.isRefreshing = true
+            // Fetching data from server
+            receiveDataFromServer()
+        }
+
+
     }
 
     fun receiveDataFromServer(){
@@ -86,11 +102,13 @@ class MainActivity : AppCompatActivity() {
                             imageUrl=jsonInner.get("imageHref").toString()
 
 
-                        //Elvis Operator used to handle null reference
                             val news = News(title,description,imageUrl)
                             newsViewModel.insert(news)
 
                     }
+
+                    // Stopping swipe refresh
+                    mSwipeRefreshLayout.isRefreshing = false;
                 },
                 Response.ErrorListener {
 
@@ -98,6 +116,7 @@ class MainActivity : AppCompatActivity() {
 
                         Toast.makeText(this,"Error: " + error.message,Toast.LENGTH_LONG).show()
 
+                        mSwipeRefreshLayout.isRefreshing = false;
                         if (error is NetworkError)
                         {}
                         else if (error is ServerError)
@@ -113,5 +132,12 @@ class MainActivity : AppCompatActivity() {
                     }
                 })
         queue.add(stringReq)
+    }
+
+    override fun onRefresh() {
+
+        //newsViewModel.clearData()
+
+        receiveDataFromServer()
     }
 }
