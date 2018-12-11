@@ -8,6 +8,7 @@ import android.support.design.widget.FloatingActionButton
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+import android.util.Log
 import android.widget.Toast
 import com.android.volley.*
 import com.android.volley.toolbox.StringRequest
@@ -59,10 +60,36 @@ class MainActivity : AppCompatActivity() {
                     for (i in 0 until jsonArray.length()) {
                         val jsonInner: JSONObject = jsonArray.getJSONObject(i)
 
-                        if(!(jsonInner.get("title")==null&&jsonInner.get("description")==null&&jsonInner.get("imageHref")==null)) {
-                            val news = News(jsonInner.get("title").toString(), jsonInner.get("description").toString(), jsonInner.get("imageHref").toString())
+                        var title:String
+                        var description:String
+                        var imageUrl:String
+
+                        //Skip news if all field are null
+                        if (jsonInner.isNull("title")&&jsonInner.isNull("description")&&jsonInner.isNull("imageHref"))
+                            continue
+
+                        if(jsonInner.isNull("title"))
+                            title="TestTitle"
+                        else
+                            title=jsonInner.get("title").toString()
+
+
+                        if(jsonInner.isNull("description"))
+                            description="TestDescription"
+                        else
+                            description=jsonInner.get("description").toString()
+
+
+                        if(jsonInner.isNull("imageHref"))
+                            imageUrl="http://3.bp.blogspot.com/__mokxbTmuJM/RnWuJ6cE9cI/AAAAAAAAATw/6z3m3w9JDiU/s400/019843_31.jpg"
+                        else
+                            imageUrl=jsonInner.get("imageHref").toString()
+
+
+                        //Elvis Operator used to handle null reference
+                            val news = News(title,description,imageUrl)
                             newsViewModel.insert(news)
-                        }
+
                     }
                 },
                 Response.ErrorListener {
