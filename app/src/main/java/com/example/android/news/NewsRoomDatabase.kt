@@ -33,7 +33,7 @@ abstract class NewsRoomDatabase : RoomDatabase() {
                 val instance = Room.databaseBuilder(
                         context.applicationContext,
                         NewsRoomDatabase::class.java,
-                        "word_database"
+                        "news_database"
                 )
                         // Wipes and rebuilds instead of migrating if no Migration object.
                         // Migration is not part of this codelab.

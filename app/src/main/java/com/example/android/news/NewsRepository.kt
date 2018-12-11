@@ -15,7 +15,6 @@ class NewsRepository(private val newsDao: NewsDao) {
         newsDao.insert(news)
     }
 
-    @Suppress("RedundantSuspendModifier")
     @WorkerThread
     fun deleteAll() {
         newsDao.deleteAll()

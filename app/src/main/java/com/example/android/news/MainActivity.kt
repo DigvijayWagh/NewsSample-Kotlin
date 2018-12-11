@@ -54,8 +54,6 @@ class MainActivity : AppCompatActivity(),SwipeRefreshLayout.OnRefreshListener {
             // Fetching data from server
             receiveDataFromServer()
         }
-
-
     }
 
     fun receiveDataFromServer(){
@@ -136,8 +134,12 @@ class MainActivity : AppCompatActivity(),SwipeRefreshLayout.OnRefreshListener {
 
     override fun onRefresh() {
 
-        //newsViewModel.clearData()
-
-        receiveDataFromServer()
+        try {
+            newsViewModel.clearData()
+            receiveDataFromServer()
+        } catch (e: Exception) {
+            mSwipeRefreshLayout.isRefreshing = false;
+            e.printStackTrace()
+        }
     }
 }
