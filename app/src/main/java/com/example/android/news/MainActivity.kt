@@ -110,6 +110,10 @@ class MainActivity : AppCompatActivity(),SwipeRefreshLayout.OnRefreshListener {
                 },
                 Response.ErrorListener {
 
+                    mSwipeRefreshLayout.isRefreshing = false;
+
+                    Toast.makeText(this,"Error: " + it.message,Toast.LENGTH_LONG).show()
+
                     fun onErrorResponse(error: VolleyError) {
 
                         Toast.makeText(this,"Error: " + error.message,Toast.LENGTH_LONG).show()
@@ -135,8 +139,17 @@ class MainActivity : AppCompatActivity(),SwipeRefreshLayout.OnRefreshListener {
     override fun onRefresh() {
 
         try {
-            newsViewModel.clearData()
-            receiveDataFromServer()
+            //newsViewModel.clearData()
+
+            //receiveDataFromServer()
+
+            mSwipeRefreshLayout.post {
+               // newsViewModel.clearData()
+
+                // Fetching data from server
+
+                receiveDataFromServer()
+            }
         } catch (e: Exception) {
             mSwipeRefreshLayout.isRefreshing = false;
             e.printStackTrace()
