@@ -19,9 +19,9 @@ class NewsListAdapter internal constructor(
 
     inner class NewsViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
-        val _title:TextView = itemView.findViewById(R.id.text_title)
+        val _title: TextView = itemView.findViewById(R.id.text_title)
         val _image: ImageView = itemView.findViewById(R.id.image_picture)
-        val _description:TextView = itemView.findViewById(R.id.text_description)
+        val _description: TextView = itemView.findViewById(R.id.text_description)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NewsViewHolder {
@@ -33,7 +33,7 @@ class NewsListAdapter internal constructor(
         val current = news[position]
         holder._title.text = current.title
         Picasso.get().load(current.imageHref).error(R.drawable.ic_launcher_background).into(holder._image)
-        holder._description.text=current.description
+        holder._description.text = current.description
     }
 
     internal fun setNews(news: List<News>) {

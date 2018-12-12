@@ -2,7 +2,11 @@ package com.example.android.news
 
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkInfo
 import android.os.Bundle
+import android.os.Handler
 import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
@@ -14,10 +18,16 @@ import com.android.volley.toolbox.Volley
 import org.json.JSONArray
 import org.json.JSONObject
 
-class MainActivity : AppCompatActivity(),SwipeRefreshLayout.OnRefreshListener {
+class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener {
 
     private lateinit var newsViewModel: NewsViewModel
-    lateinit var mSwipeRefreshLayout:SwipeRefreshLayout
+
+    lateinit var mSwipeRefreshLayout: SwipeRefreshLayout
+
+    private lateinit var mDbWorkerThread: DbWorkerThread
+
+    private val mUiHandler = Handler()
+
     val url: String = "https://dl.dropboxusercontent.com/s/2iodh4vg0eortkl/facts.json"
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -29,6 +39,9 @@ class MainActivity : AppCompatActivity(),SwipeRefreshLayout.OnRefreshListener {
 
         recyclerView.adapter = adapter
         recyclerView.layoutManager = LinearLayoutManager(this)
+
+        mDbWorkerThread = DbWorkerThread("dbWorkerThread")
+        mDbWorkerThread.start()
 
         // SwipeRefreshLayout
         mSwipeRefreshLayout = findViewById<SwipeRefreshLayout>(R.id.swipe_container)
@@ -50,13 +63,14 @@ class MainActivity : AppCompatActivity(),SwipeRefreshLayout.OnRefreshListener {
          * Showing Swipe Refresh animation on activity create
          */
         mSwipeRefreshLayout.post {
+
             mSwipeRefreshLayout.isRefreshing = true
-            // Fetching data from server
+
             receiveDataFromServer()
         }
     }
 
-    fun receiveDataFromServer(){
+    fun receiveDataFromServer() {
 
         val queue = Volley.newRequestQueue(this)
 
@@ -74,34 +88,34 @@ class MainActivity : AppCompatActivity(),SwipeRefreshLayout.OnRefreshListener {
                     for (i in 0 until jsonArray.length()) {
                         val jsonInner: JSONObject = jsonArray.getJSONObject(i)
 
-                        var title:String
-                        var description:String
-                        var imageUrl:String
+                        var title: String
+                        var description: String
+                        var imageUrl: String
 
                         //Skip news if all field are null
-                        if (jsonInner.isNull("title")&&jsonInner.isNull("description")&&jsonInner.isNull("imageHref"))
+                        if (jsonInner.isNull("title") && jsonInner.isNull("description") && jsonInner.isNull("imageHref"))
                             continue
 
-                        if(jsonInner.isNull("title"))
-                            title="TestTitle"
+                        if (jsonInner.isNull("title"))
+                            title = "TestTitle"
                         else
-                            title=jsonInner.get("title").toString()
+                            title = jsonInner.get("title").toString()
 
 
-                        if(jsonInner.isNull("description"))
-                            description="TestDescription"
+                        if (jsonInner.isNull("description"))
+                            description = "TestDescription"
                         else
-                            description=jsonInner.get("description").toString()
+                            description = jsonInner.get("description").toString()
 
 
-                        if(jsonInner.isNull("imageHref"))
-                            imageUrl="http://3.bp.blogspot.com/__mokxbTmuJM/RnWuJ6cE9cI/AAAAAAAAATw/6z3m3w9JDiU/s400/019843_31.jpg"
+                        if (jsonInner.isNull("imageHref"))
+                            imageUrl = "http://3.bp.blogspot.com/__mokxbTmuJM/RnWuJ6cE9cI/AAAAAAAAATw/6z3m3w9JDiU/s400/019843_31.jpg"
                         else
-                            imageUrl=jsonInner.get("imageHref").toString()
+                            imageUrl = jsonInner.get("imageHref").toString()
 
 
-                            val news = News(title,description,imageUrl)
-                            newsViewModel.insert(news)
+                        val news = News(title, description, imageUrl)
+                        newsViewModel.insert(news)
 
                     }
 
@@ -112,47 +126,51 @@ class MainActivity : AppCompatActivity(),SwipeRefreshLayout.OnRefreshListener {
 
                     mSwipeRefreshLayout.isRefreshing = false;
 
-                    Toast.makeText(this,"Error: " + it.message,Toast.LENGTH_LONG).show()
+                    Toast.makeText(this, "Error: " + it.message, Toast.LENGTH_LONG).show()
 
                     fun onErrorResponse(error: VolleyError) {
 
-                        Toast.makeText(this,"Error: " + error.message,Toast.LENGTH_LONG).show()
-
                         mSwipeRefreshLayout.isRefreshing = false;
-                        if (error is NetworkError)
-                        {}
-                        else if (error is ServerError)
-                        {}
-                        else if (error is AuthFailureError)
-                        {}
-                        else if (error is ParseError)
-                        {}
-                        else if (error is NoConnectionError)
-                        {}
-                        else if (error is TimeoutError)
-                        {}
+                        if (error is NetworkError) {
+                        } else if (error is ServerError) {
+                        } else if (error is AuthFailureError) {
+                        } else if (error is ParseError) {
+                        } else if (error is NoConnectionError) {
+                        } else if (error is TimeoutError) {
+                        }
                     }
                 })
         queue.add(stringReq)
     }
 
     override fun onRefresh() {
+        mSwipeRefreshLayout.isRefreshing = true
 
-        try {
-            //newsViewModel.clearData()
+        if(isNetworkAvailable()) {
 
-            //receiveDataFromServer()
+            val task = Runnable {
+                newsViewModel.clearData()
 
-            mSwipeRefreshLayout.post {
-               // newsViewModel.clearData()
-
-                // Fetching data from server
-
-                receiveDataFromServer()
+                mUiHandler.post {
+                    receiveDataFromServer()
+                }
             }
-        } catch (e: Exception) {
-            mSwipeRefreshLayout.isRefreshing = false;
-            e.printStackTrace()
+            mDbWorkerThread.postTask(task)
+        }else{
+            mSwipeRefreshLayout.isRefreshing = false
+
+            Toast.makeText(this, "No active internet available", Toast.LENGTH_LONG).show()
+
         }
     }
+
+    private fun isNetworkAvailable(): Boolean {
+        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE)
+        return if (connectivityManager is ConnectivityManager) {
+            val networkInfo: NetworkInfo? = connectivityManager.activeNetworkInfo
+            networkInfo?.isConnected ?: false
+        } else false
+    }
+
+
 }

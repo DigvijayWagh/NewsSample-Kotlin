@@ -45,7 +45,7 @@ class NewsDaoTest {
     @Test
     @Throws(Exception::class)
     fun insertAndGetnews() {
-        val news = News("news","test","http://www.donegalhimalayans.com/images/That%20fish%20was%20this%20big.jpg")
+        val news = News("news", "test", "http://www.donegalhimalayans.com/images/That%20fish%20was%20this%20big.jpg")
         newsDao.insert(news)
         val allnews = newsDao.getNews().waitForValue()
         assertEquals(allnews[0].title, news.title)
@@ -54,9 +54,9 @@ class NewsDaoTest {
     @Test
     @Throws(Exception::class)
     fun getAllnews() {
-        val news = News("aaa","test","http://www.donegalhimalayans.com/images/That%20fish%20was%20this%20big.jpg")
+        val news = News("aaa", "test", "http://www.donegalhimalayans.com/images/That%20fish%20was%20this%20big.jpg")
         newsDao.insert(news)
-        val news2 = News("bbb","test2","http://www.donegalhimalayans.com/images/That%20fish%20was%20this%20big.jpg")
+        val news2 = News("bbb", "test2", "http://www.donegalhimalayans.com/images/That%20fish%20was%20this%20big.jpg")
         newsDao.insert(news2)
         val allnews = newsDao.getNews().waitForValue()
         assertEquals(allnews[0].title, news.title)
@@ -66,9 +66,9 @@ class NewsDaoTest {
     @Test
     @Throws(Exception::class)
     fun deleteAll() {
-        val news = News("word","","")
+        val news = News("word", "", "")
         newsDao.insert(news)
-        val news2 = News("news2","","")
+        val news2 = News("news2", "", "")
         newsDao.insert(news2)
         newsDao.deleteAll()
         val allnews = newsDao.getNews().waitForValue()
